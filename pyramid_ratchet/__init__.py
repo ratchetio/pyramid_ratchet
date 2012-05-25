@@ -46,11 +46,11 @@ def _handle_error(settings, request):
     params['request.GET'] = dict(request.GET)
     params['request.POST'] = dict(request.POST)
     params['server.host'] = socket.gethostname()
-    params['server.environment'] = settings['environment']
-    params['server.branch'] = settings['branch']
-    params['server.root'] = settings['root']
-    params['server.github.account'] = settings['github.account']
-    params['server.github.repo'] = settings['github.repo']
+    params['server.environment'] = settings.get('environment')
+    params['server.branch'] = settings.get('branch')
+    params['server.root'] = settings.get('root')
+    params['server.github.account'] = settings.get('github.account')
+    params['server.github.repo'] = settings.get('github.repo')
     params['notifier.name'] = 'pyramid_plugin'
     payload['params'] = json.dumps(params)
 
