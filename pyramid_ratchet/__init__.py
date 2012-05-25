@@ -51,7 +51,7 @@ def _handle_error(settings, request):
     params['server.root'] = settings.get('root')
     params['server.github.account'] = settings.get('github.account')
     params['server.github.repo'] = settings.get('github.repo')
-    params['notifier.name'] = 'pyramid_plugin'
+    params['notifier.name'] = 'pyramid_ratchet'
     payload['params'] = json.dumps(params)
 
     requests.post(settings['endpoint'], data=payload, timeout=1)
