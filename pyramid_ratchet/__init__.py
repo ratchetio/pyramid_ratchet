@@ -48,6 +48,7 @@ def _handle_error(settings, request):
     # expand headers, plays more nicely for processing
     for k, v in request.headers.iteritems():
         params['request.headers.%s' % k] = v
+    params['request.user_ip'] = _extract_user_ip(request)
     params['server.host'] = socket.gethostname()
     params['server.environment'] = settings.get('environment')
     params['server.branch'] = settings.get('branch')
@@ -58,6 +59,17 @@ def _handle_error(settings, request):
     payload['params'] = json.dumps(params)
 
     requests.post(settings['endpoint'], data=payload, timeout=1)
+
+
+def _extract_user_ip(request):
+    # some common things passed by load balancers... will need more of these.
+    real_ip = request.headers.get('X-Real-Ip')
+    if real_ip:
+        return real_ip
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        return forwarded_for
+    return request.remote_addr
 
 
 def parse_settings(settings):
