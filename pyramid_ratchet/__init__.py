@@ -45,7 +45,9 @@ def _handle_error(settings, request):
     params['request.url'] = request.url
     params['request.GET'] = dict(request.GET)
     params['request.POST'] = dict(request.POST)
-    params['request.headers'] = dict(request.headers)
+    # expand headers, plays more nicely for processing
+    for k, v in request.headers.iteritems():
+        params['request.headers.%s' % k] = v
     params['server.host'] = socket.gethostname()
     params['server.environment'] = settings.get('environment')
     params['server.branch'] = settings.get('branch')
