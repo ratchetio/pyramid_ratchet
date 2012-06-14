@@ -15,6 +15,7 @@ import requests
 
 
 log = logging.getLogger(__name__)
+ratchetd_log = logging.getLogger('ratchetd')
 
 
 def handle_error(settings, request):
@@ -58,7 +59,15 @@ def _handle_error(settings, request):
     params['notifier.name'] = 'pyramid_ratchet'
     payload['params'] = json.dumps(params)
 
-    requests.post(settings['endpoint'], data=payload, timeout=1)
+    handler = settings.get('handler', 'blocking')
+    if handler == 'blocking':
+        requests.post(settings['endpoint'], data=payload, timeout=1)
+    elif handler == 'ratchetd':
+        _write_for_ratchetd(payload)
+
+
+def _write_for_ratchetd(payload):
+    ratchetd_log.error(json.dumps(payload))
 
 
 def _extract_user_ip(request):
