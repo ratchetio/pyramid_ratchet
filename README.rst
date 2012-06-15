@@ -64,7 +64,7 @@ handler
 environment
     Environment name; should be ``production``, ``staging``, or ``development``.
 root
-    Absolute path to the root of your application, not including the final ``/``. If your ``manage.py`` is in ``/home/brian/www/coolapp/manage.py``, then this should be set to ``/home/brian/www/coolapp`` . Required for Github integration.
+    Absolute path to the root of your application, not including the final ``/``. ``%(here)s`` is probably what you want.
 github.account
     Github account name for your github repo. Required for Github integration.
 github.repo
