@@ -74,6 +74,18 @@ branch
 agent.log_file
     If ``handler`` is ``agent``, the path to the log file. Filename must end in ``.ratchet``
 
+
+Contributing
+------------
+
+Contributions are welcome. The project is hosted on github at http://github.com/brianr/pyramid_ratchet
+
+
+Additional Help
+---------------
+If you have any questions, feedback, etc., drop me a line at brian@ratchet.io
+
+
 .. _Ratchet.io: http://ratchet.io/
 .. _`download the zip`: https://github.com/brianr/pyramid_ratchet/zipball/master
 .. _ratchet-agent: http://github.com/brianr/ratchet-agent
