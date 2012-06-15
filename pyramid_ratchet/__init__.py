@@ -6,6 +6,7 @@ import json
 import logging
 import socket
 import sys
+import threading
 import time
 import traceback
 
@@ -15,7 +16,7 @@ import requests
 
 
 log = logging.getLogger(__name__)
-ratchet_agent_log = logging.getLogger('ratchet_agent')
+agent_log = None
 
 
 def handle_error(settings, request):
@@ -59,22 +60,33 @@ def _handle_error(settings, request):
     params['notifier.name'] = 'pyramid_ratchet'
     payload['params'] = json.dumps(params)
 
-    handler = settings.get('handler', 'blocking')
+    handler = settings.get('handler', 'thread')
     if handler == 'blocking':
         _send_payload(settings, payload)
     elif handler == 'thread':
         thread = threading.Thread(target=_send_payload, args=(settings, payload))
         thread.start()
     elif handler == 'agent':
-        _write_for_agent(payload)
+        _write_for_agent(settings, payload)
 
 
 def _send_payload(settings, payload):
     requests.post(settings['endpoint'], data=payload, timeout=1)
 
 
-def _write_for_agent(payload):
-    ratchet_agent_log.error(json.dumps(payload))
+def _write_for_agent(settings, payload):
+    # create log if it doesn't exist
+    global agent_log
+    if not agent_log:
+        agent_log = logging.getLogger('ratchet_agent')
+        handler = logging.FileHandler(settings.get('agent.log_file', 'log.ratchet'), 'a', 'utf-8')
+        formatter = logging.Formatter('%(message)s')
+        handler.setFormatter(formatter)
+        agent_log.addHandler(handler)
+        agent_log.setLevel(logging.WARNING)
+
+    # write json line
+    agent_log.error(json.dumps(payload))
 
 
 def _extract_user_ip(request):
