@@ -62,7 +62,7 @@ handler
 
     **default:** ``thread``
 environment
-    Environment name; should be ``production``, ``staging``, or ``development``.
+    Environment name. Any string up to 255 chars is OK. For best results, use "production" for your production environment.
 root
     Absolute path to the root of your application, not including the final ``/``. ``%(here)s`` is probably what you want.
 github.account
