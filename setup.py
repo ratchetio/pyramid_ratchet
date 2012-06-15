@@ -3,7 +3,7 @@ from setuptools import Command, find_packages, setup
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-README_PATH = os.path.join(HERE, 'README.md')
+README_PATH = os.path.join(HERE, 'README.rst')
 try:
     README = open(README_PATH).read()
 except IOError:
@@ -12,23 +12,30 @@ except IOError:
 setup(
     name='pyramid_ratchet',
     version='0.1',
-    description='ratchet plugin for pyramid',
+    description='Ratchet.io plugin for pyramid',
     long_description=README,
-    author='brianr',
-    author_email='',
-    url='',
+    author='Brian Rue',
+    author_email='brian@ratchet.io',
+    url='http://github.com/brianr/pyramid_ratchet',
     classifiers=[
-        "Development Status :: 1 - Planning",
-        "Intended Audience :: Developers",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Development Status :: 3 - Alpha",
+        "Environment :: Web Environment",
+        "Framework :: Pyramid",
+        "Intended Audience :: Developers",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Bug Tracking",
+        "Topic :: Software Development :: Testing",
+        "Topic :: Software Development :: Quality Assurance",
         ],
     install_requires=[
         'pyramid>=1.2',
         'requests',
         ],
-    packages=find_packages(),
-    zip_safe=False,
     )
 
 

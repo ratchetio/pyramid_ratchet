@@ -61,9 +61,16 @@ def _handle_error(settings, request):
 
     handler = settings.get('handler', 'blocking')
     if handler == 'blocking':
-        requests.post(settings['endpoint'], data=payload, timeout=1)
+        _send_payload(settings, payload)
+    elif handler == 'thread':
+        thread = threading.Thread(target=_send_payload, args=(settings, payload))
+        thread.start()
     elif handler == 'agent':
         _write_for_agent(payload)
+
+
+def _send_payload(settings, payload):
+    requests.post(settings['endpoint'], data=payload, timeout=1)
 
 
 def _write_for_agent(payload):
