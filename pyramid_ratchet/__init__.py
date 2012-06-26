@@ -14,6 +14,9 @@ from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
 import requests
 
+VERSION = '0.1.5'
+DEFAULT_ENDPOINT = 'http://submit.ratchet.io/api/1/item/'
+
 
 log = logging.getLogger(__name__)
 agent_log = None
@@ -36,6 +39,73 @@ def handle_error(settings, request):
 
 
 def _handle_error(settings, request):
+    payload = _build_payload(settings, request)
+
+    handler = settings.get('handler', 'thread')
+    if handler == 'blocking':
+        _send_payload(settings, payload)
+    elif handler == 'thread':
+        thread = threading.Thread(target=_send_payload, args=(settings, payload))
+        thread.start()
+    elif handler == 'agent':
+        _write_for_agent(settings, payload)
+
+
+def _build_payload(settings, request):
+    # basic params
+    data = {
+        'timestamp': int(time.time()),
+        'environment': settings.get('environment'),
+        'level': 'error',
+        'language': 'python',
+        'framework': 'pyramid',
+        'notifier': {
+            'name': 'pyramid_ratchet',
+            'version': VERSION,
+        }
+    }
+
+    # exception info
+    cls, exc, trace = sys.exc_info()
+    # most recent call last
+    raw_frames = traceback.extract_tb(trace)
+    frames = [{'filename': f[0], 'lineno': f[1], 'method': f[2], 'code': f[3]} for f in raw_frames]
+    data['body'] = {
+        'trace': {
+            'frames': frames,
+            'exception': {
+                'class': cls.__name__,
+                'message': str(exc),
+            }
+        }
+    }
+
+    # request data
+    data['request'] = {
+        'url': request.url,
+        'GET': dict(request.GET),
+        'POST': dict(request.POST),
+        'matchdict': request.matchdict,
+        'user_ip': _extract_user_ip(request),
+        'headers': dict(request.headers),
+    }
+
+    # server environment
+    data['server'] = {
+        'host': socket.gethostname(),
+        'branch': settings.get('branch'),
+        'root': settings.get('root'),
+    }
+
+    # build into final payload
+    payload = {
+        'access_token': settings['access_token'],
+        'data': data
+    }
+    return json.dumps(payload)
+
+    
+def _build_payload_old(settings, request):
     payload = {}
     payload['access_token'] = settings['access_token']
     payload['timestamp'] = int(time.time())
@@ -60,18 +130,10 @@ def _handle_error(settings, request):
     params['notifier.name'] = 'pyramid_ratchet'
     payload['params'] = json.dumps(params)
 
-    handler = settings.get('handler', 'thread')
-    if handler == 'blocking':
-        _send_payload(settings, payload)
-    elif handler == 'thread':
-        thread = threading.Thread(target=_send_payload, args=(settings, payload))
-        thread.start()
-    elif handler == 'agent':
-        _write_for_agent(settings, payload)
-
 
 def _send_payload(settings, payload):
-    requests.post(settings['endpoint'], data=payload, timeout=1)
+    print "payload data: ", payload
+    requests.post(settings.get('endpoint', DEFAULT_ENDPOINT), data=payload, timeout=1)
 
 
 def _write_for_agent(settings, payload):
