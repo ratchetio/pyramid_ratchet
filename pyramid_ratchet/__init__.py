@@ -55,7 +55,7 @@ def _build_payload(settings, request):
     # basic params
     data = {
         'timestamp': int(time.time()),
-        'environment': settings.get('environment'),
+        'environment': settings['environment'],
         'level': 'error',
         'language': 'python',
         'framework': 'pyramid',
