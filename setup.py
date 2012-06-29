@@ -11,7 +11,7 @@ except IOError:
 
 setup(
     name='pyramid_ratchet',
-    version='0.1.4',
+    version='0.1.5',
     description='Ratchet.io plugin for pyramid',
     long_description=README,
     author='Brian Rue',
