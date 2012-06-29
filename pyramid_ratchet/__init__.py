@@ -85,7 +85,7 @@ def _build_payload(settings, request):
         'url': request.url,
         'GET': dict(request.GET),
         'POST': dict(request.POST),
-        'matchdict': request.matchdict,
+        'params': request.matchdict,
         'user_ip': _extract_user_ip(request),
         'headers': dict(request.headers),
     }
@@ -132,8 +132,10 @@ def _build_payload_old(settings, request):
 
 
 def _send_payload(settings, payload):
-    print "payload data: ", payload
-    requests.post(settings.get('endpoint', DEFAULT_ENDPOINT), data=payload, timeout=1)
+    resp = requests.post(settings.get('endpoint', DEFAULT_ENDPOINT), data=payload, timeout=1)
+    if resp.status_code != 200:
+        log.warning("Got unexpected status code from Ratchet.io api: %s\nResponse:\n%s",
+            resp.status_code, resp.text)
 
 
 def _write_for_agent(settings, payload):
