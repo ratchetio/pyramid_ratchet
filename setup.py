@@ -11,8 +11,8 @@ except IOError:
 
 setup(
     name='pyramid_ratchet',
-    version='0.1.5',
-    description='Ratchet.io plugin for pyramid',
+    version='0.2',
+    description='Ratchet.io notifier plugin for Pyramid',
     long_description=README,
     author='Brian Rue',
     author_email='brian@ratchet.io',
@@ -21,7 +21,7 @@ setup(
         "Programming Language :: Python",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Framework :: Pyramid",
         "Intended Audience :: Developers",

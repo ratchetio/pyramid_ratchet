@@ -1,5 +1,5 @@
 """
-Plugin for pyramid apps to submit errors to ratchet
+Plugin for Pyramid apps to submit errors to Ratchet.io
 """
 
 import json
@@ -14,8 +14,8 @@ from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
 import requests
 
-VERSION = '0.1.5'
-DEFAULT_ENDPOINT = 'http://submit.ratchet.io/api/1/item/'
+VERSION = '0.2'
+DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/item/'
 
 
 log = logging.getLogger(__name__)
@@ -85,10 +85,11 @@ def _build_payload(settings, request):
         'url': request.url,
         'GET': dict(request.GET),
         'POST': dict(request.POST),
-        'params': request.matchdict,
         'user_ip': _extract_user_ip(request),
         'headers': dict(request.headers),
     }
+    if request.matchdict:
+        data['request']['params'] = request.matchdict
 
     # server environment
     data['server'] = {
@@ -105,32 +106,6 @@ def _build_payload(settings, request):
     return json.dumps(payload)
 
     
-def _build_payload_old(settings, request):
-    payload = {}
-    payload['access_token'] = settings['access_token']
-    payload['timestamp'] = int(time.time())
-
-    cls, exc, trace = sys.exc_info()
-    payload['body'] = "".join(traceback.format_exception(cls, exc, trace))
-
-    params = {}
-    params['request.url'] = request.url
-    params['request.GET'] = dict(request.GET)
-    params['request.POST'] = dict(request.POST)
-    # expand headers, plays more nicely for processing
-    for k, v in request.headers.iteritems():
-        params['request.headers.%s' % k] = v
-    params['request.user_ip'] = _extract_user_ip(request)
-    params['server.host'] = socket.gethostname()
-    params['server.environment'] = settings.get('environment')
-    params['server.branch'] = settings.get('branch')
-    params['server.root'] = settings.get('root')
-    params['server.github.account'] = settings.get('github.account')
-    params['server.github.repo'] = settings.get('github.repo')
-    params['notifier.name'] = 'pyramid_ratchet'
-    payload['params'] = json.dumps(params)
-
-
 def _send_payload(settings, payload):
     resp = requests.post(settings.get('endpoint', DEFAULT_ENDPOINT), data=payload, timeout=1)
     if resp.status_code != 200:
@@ -180,6 +155,17 @@ def ratchet_tween_factory(pyramid_handler, registry):
     blacklist = (WSGIHTTPException,)
 
     def ratchet_tween(request):
+        # for testing out the integration
+        try:
+            if (settings.get('allow_test', 'true') == 'true' and 
+                request.GET.get('pyramid_ratchet_test') == 'true'):
+                try:
+                    raise Exception("pyramid_ratchet test exception")
+                except:
+                    handle_error(settings, request)
+        except:
+            log.exception("Error in pyramid_ratchet_test block")
+            
         try:
             response = pyramid_handler(request)
         except whitelist:
@@ -196,5 +182,8 @@ def ratchet_tween_factory(pyramid_handler, registry):
 
 
 def includeme(config):
+    """
+    Pyramid entry point
+    """
     config.add_tween('pyramid_ratchet.ratchet_tween_factory', under=EXCVIEW)
 
