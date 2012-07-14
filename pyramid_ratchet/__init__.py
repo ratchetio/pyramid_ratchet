@@ -84,12 +84,18 @@ def _build_payload(settings, request):
     data['request'] = {
         'url': request.url,
         'GET': dict(request.GET),
-        'POST': dict(request.POST),
         'user_ip': _extract_user_ip(request),
         'headers': dict(request.headers),
     }
     if request.matchdict:
         data['request']['params'] = request.matchdict
+    
+    # workaround for webob bug when the request body contains binary data but has a text
+    # content-type
+    try:
+        data['request']['POST'] = dict(request.POST)
+    except UnicodeDecodeError:
+        data['request']['body'] = request.body
 
     # server environment
     data['server'] = {
