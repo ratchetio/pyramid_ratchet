@@ -11,7 +11,8 @@ except IOError:
 
 setup(
     name='pyramid_ratchet',
-    version='0.2.3',
+    packages=['pyramid_ratchet'],
+    version='0.2.4',
     description='Ratchet.io notifier plugin for Pyramid',
     long_description=README,
     author='Brian Rue',
