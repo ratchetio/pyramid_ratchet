@@ -78,7 +78,7 @@ endpoint
 Contributing
 ------------
 
-Contributions are welcome. The project is hosted on github at http://github.com/brianr/pyramid_ratchet
+Contributions are welcome. The project is hosted on github at http://github.com/ratchetio/pyramid_ratchet
 
 
 Additional Help
@@ -88,4 +88,4 @@ If you have any questions, feedback, etc., drop me a line at brian@ratchet.io
 
 .. _Ratchet.io: http://ratchet.io/
 .. _error reporting: http://ratchet.io/
-.. _ratchet-agent: http://github.com/brianr/ratchet-agent
+.. _ratchet-agent: http://github.com/ratchetio/ratchet-agent

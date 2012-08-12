@@ -14,7 +14,7 @@ from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
 import requests
 
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/item/'
 
 
