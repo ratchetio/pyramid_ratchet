@@ -1,7 +1,9 @@
 pyramid_ratchet
 ===============
 
-pyramid_ratchet is a simple middleware for reporting errors from Pyramid apps to Ratchet.io_.
+pyramid_ratchet is a simple middleware for reporting errors from Pyramid apps to Ratchet.io_. 
+
+If pyramid_debugtoolbar is available, it will be monkey-patched so that exception pages show a link to the relevant item in Ratchet.io.
 
 
 Requirements
@@ -23,12 +25,12 @@ Install using pip::
 
 Configuration
 -------------
-Add pyramid_ratchet to the beginning of your ``pyramid.includes``::
+Add pyramid_ratchet to the *end* of your ``pyramid.includes``::
     
     [app:main]
     pyramid.includes =
-        pyramid_ratchet
         pyramid_debugtoolbar
+        pyramid_ratchet
 
 Add the bare minimum configuration variables::
 

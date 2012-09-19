@@ -9,13 +9,15 @@ import sys
 import threading
 import time
 import traceback
+import uuid
 
 from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
 import requests
 
-VERSION = '0.2.5'
+VERSION = '0.3'
 DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/item/'
+DEFAULT_WEB_BASE = 'https://ratchet.io'
 
 
 log = logging.getLogger(__name__)
@@ -40,15 +42,20 @@ def handle_error(settings, request):
 
 def _handle_error(settings, request):
     payload = _build_payload(settings, request)
+    # set environment variable to be picked up by the debug toolbar
+    request.environ['ratchet.uuid'] = payload['data']['uuid']
+    
+    payload_data = json.dumps(payload)
 
     handler = settings.get('handler', 'thread')
     if handler == 'blocking':
-        _send_payload(settings, payload)
+        _send_payload(settings, payload_data)
     elif handler == 'thread':
-        thread = threading.Thread(target=_send_payload, args=(settings, payload))
+        thread = threading.Thread(target=_send_payload, args=(settings, payload_data))
         thread.start()
     elif handler == 'agent':
-        _write_for_agent(settings, payload)
+        _write_for_agent(settings, payload_data)
+
 
 
 def _build_payload(settings, request):
@@ -59,6 +66,7 @@ def _build_payload(settings, request):
         'level': 'error',
         'language': 'python',
         'framework': 'pyramid',
+        'uuid': str(uuid.uuid4()),
         'notifier': {
             'name': 'pyramid_ratchet',
             'version': VERSION,
@@ -109,7 +117,7 @@ def _build_payload(settings, request):
         'access_token': settings['access_token'],
         'data': data
     }
-    return json.dumps(payload)
+    return payload
 
     
 def _send_payload(settings, payload):
@@ -187,9 +195,48 @@ def ratchet_tween_factory(pyramid_handler, registry):
     return ratchet_tween
 
 
+def patch_debugtoolbar(settings):
+    """
+    Patches the pyramid_debugtoolbar (if installed) to display a link to the related ratchet item.
+    """
+    try:
+        from pyramid_debugtoolbar import tbtools
+    except ImportError:
+        return
+
+    ratchet_web_base = settings.get('ratchet.web_base', DEFAULT_WEB_BASE)
+    if ratchet_web_base.endswith('/'):
+        ratchet_web_base = ratchet_web_base[:-1]
+    
+    def insert_ratchet_console(request, html):
+        # insert after the closing </h1>
+        item_uuid = request.environ.get('ratchet.uuid')
+        if not item_uuid:
+            return html
+        
+        url = '%s/item/uuid/?uuid=%s' % (ratchet_web_base, item_uuid)
+        link = '<a style="color:white;" href="%s">View in Ratchet.io</a>' % url
+        new_data = "<h2>Ratchet.io: %s</h2>" % link
+        insertion_marker = "</h1>"
+        replacement = insertion_marker + new_data
+        return html.replace(insertion_marker, replacement, 1)
+
+    # patch tbtools.Traceback.render_full
+    old_render_full = tbtools.Traceback.render_full
+    def new_render_full(self, request, *args, **kw):
+        html = old_render_full(self, request, *args, **kw)
+        return insert_ratchet_console(request, html)
+    tbtools.Traceback.render_full = new_render_full
+
+
 def includeme(config):
     """
     Pyramid entry point
     """
     config.add_tween('pyramid_ratchet.ratchet_tween_factory', under=EXCVIEW)
+
+    # run patch_debugtoolbar, unless they disabled it
+    settings = config.registry.settings
+    if settings.get('ratchet.patch_debugtoolbar', 'true') == 'true':
+        patch_debugtoolbar(settings)
 
