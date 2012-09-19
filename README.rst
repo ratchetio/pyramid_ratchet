@@ -75,6 +75,14 @@ endpoint
     URL items are posted to.
     
     **default:** ``https://submit.ratchet.io/api/1/item/``
+web_base
+    Base URL of the Ratchet.io web interface (used for links on the exception debug page)
+
+    **default** ``https://ratchet.io``
+patch_debugtoolbar
+    If true, pyramid_debugtoolbar will be monkeypatched so that exception debug pages include a link to the item in Ratchet.io
+
+    **default** ``true``
 
 
 Contributing
