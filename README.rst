@@ -45,6 +45,23 @@ Most users will want a few extra settings to take advantage of more features::
     ratchet.branch = master
     ratchet.root = %(here)s
 
+To enable Person tracking (to associate errors with users), attach a "ratchet_person" property to your ``request`` objects. It should return a dictionary containing an 'id' identifying the user (any string up to 40 characters), and may optionally include 'username' and 'email' (255-char strings). For example:
+
+    class MyRequest(pyramid.request.Request):
+        @property
+        def ratchet_person(self):
+            return {
+                'id': get_user_id(self),
+                'username': get_username(self),
+                'email': get_user_email(self)
+            }
+
+    # when setting up your Configurator:
+    config = Configurator(settings=settings, request_factory=MyRequest)
+
+If your request objects don't have a ratchet_person object, pyramid_ratchet will look for request.user_id instead.
+
+
 Here's the full list of configuration variables:
 
 access_token

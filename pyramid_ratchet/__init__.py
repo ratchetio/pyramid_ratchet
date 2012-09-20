@@ -8,6 +8,7 @@ import socket
 import sys
 import threading
 import time
+import types
 import traceback
 import uuid
 
@@ -15,7 +16,7 @@ from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
 import requests
 
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/item/'
 DEFAULT_WEB_BASE = 'https://ratchet.io'
 
@@ -95,6 +96,7 @@ def _build_payload(settings, request):
         'user_ip': _extract_user_ip(request),
         'headers': dict(request.headers),
     }
+
     if request.matchdict:
         data['request']['params'] = request.matchdict
     
@@ -111,6 +113,22 @@ def _build_payload(settings, request):
         'branch': settings.get('branch'),
         'root': settings.get('root'),
     }
+    
+    # 'person': try request.ratchet_person first. if not defined, build using request.user_id
+    try:
+        if hasattr(request, 'ratchet_person'):
+            data['person'] = request.ratchet_person
+        elif hasattr(request, 'user_id'):
+            # if it looks like a function, call it.
+            user_id_prop = request.user_id
+            if isinstance(user_id_prop, (types.MethodType, types.FunctionType)):
+                user_id = user_id_prop()
+            else:
+                user_id = user_id_prop
+
+            data['person'] = {'id': str(request.user_id)}
+    except:
+        log.exception("Exception while preparing 'person' data for Ratchet payload")
 
     # build into final payload
     payload = {

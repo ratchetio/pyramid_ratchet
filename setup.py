@@ -12,7 +12,7 @@ except IOError:
 setup(
     name='pyramid_ratchet',
     packages=['pyramid_ratchet'],
-    version='0.3.1',
+    version='0.3.2',
     description='Ratchet.io notifier plugin for Pyramid',
     long_description=README,
     author='Brian Rue',
