@@ -14,10 +14,12 @@ import uuid
 
 from pyramid.httpexceptions import WSGIHTTPException
 from pyramid.tweens import EXCVIEW
-import requests
 
-VERSION = '0.3.2'
-DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/item/'
+import requests
+import urlparse
+
+VERSION = '0.3.3'
+DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/'
 DEFAULT_WEB_BASE = 'https://ratchet.io'
 
 
@@ -113,7 +115,7 @@ def _build_payload(settings, request):
         'branch': settings.get('branch'),
         'root': settings.get('root'),
     }
-    
+
     # 'person': try request.ratchet_person first. if not defined, build using request.user_id
     try:
         if hasattr(request, 'ratchet_person'):
@@ -137,9 +139,10 @@ def _build_payload(settings, request):
     }
     return payload
 
-    
+
 def _send_payload(settings, payload):
-    resp = requests.post(settings.get('endpoint', DEFAULT_ENDPOINT), data=payload, timeout=1)
+    url = urlparse.urljoin(settings.get('endpoint', DEFAULT_ENDPOINT), 'item/')
+    resp = requests.post(url, data=payload, timeout=1)
     if resp.status_code != 200:
         log.warning("Got unexpected status code from Ratchet.io api: %s\nResponse:\n%s",
             resp.status_code, resp.text)
