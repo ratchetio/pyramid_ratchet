@@ -18,9 +18,10 @@ from pyramid.tweens import EXCVIEW
 import requests
 import urlparse
 
-VERSION = '0.3.3'
+VERSION = '0.3.4'
 DEFAULT_ENDPOINT = 'https://submit.ratchet.io/api/1/'
 DEFAULT_WEB_BASE = 'https://ratchet.io'
+DEFAULT_SCRUB_FIELDS = ['passwd', 'password', 'secret']
 
 
 log = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ def _build_payload(settings, request):
     # workaround for webob bug when the request body contains binary data but has a text
     # content-type
     try:
-        data['request']['POST'] = dict(request.POST)
+        data['request']['POST'] = _scrub_request_params(settings, request.POST)
     except UnicodeDecodeError:
         data['request']['body'] = request.body
 
@@ -138,6 +139,29 @@ def _build_payload(settings, request):
         'data': data
     }
     return payload
+
+
+def _scrub_request_params(settings, params):
+    """
+    Given request.POST/request.GET, returns a dict with passwords scrubbed out
+    (replaced with astrickses)
+    """
+    if settings.get('scrub_fields'):
+        scrub_fields = set([str.strip(x) for x in settings.get('scrub_fields').split('\n') if x])
+    else:
+        scrub_fields = DEFAULT_SCRUB_FIELDS
+        
+    #TODO: request.POST is a MultiDict so data may be lost here
+    params = dict(params)
+    
+    for k, v in params.items():
+        if k.lower() in scrub_fields:
+            if isinstance(v, list):
+                params[k] = ['*' * len(x) for x in v]
+            else:
+                params[k] = '*' * len(v)
+    
+    return params
 
 
 def _send_payload(settings, payload):

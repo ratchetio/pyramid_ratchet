@@ -100,6 +100,10 @@ patch_debugtoolbar
     If true, pyramid_debugtoolbar will be monkeypatched so that exception debug pages include a link to the item in Ratchet.io
 
     **default** ``true``
+scrub_fields
+    List of field names to scrub out of POST. Values will be replaced with astrickses. If overridiing, make sure to list all fields you want to scrub, not just fields you want to add to the default. Param names are converted to lowercase before comparing against the scrub list.
+
+    **default** ``['passwd', 'password', 'secret']``
 
 
 Contributing
