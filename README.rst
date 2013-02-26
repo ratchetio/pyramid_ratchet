@@ -1,3 +1,6 @@
+This library is deprecated, please use pyrollbar_
+=================================================
+
 pyramid_ratchet
 ===============
 
@@ -117,6 +120,7 @@ Additional Help
 If you have any questions, feedback, etc., drop us a line at support@ratchet.io
 
 
+.. _pyrollbar: https://github.com/rollbar/pyrollbar
 .. _Ratchet.io: http://ratchet.io/
 .. _error reporting: http://ratchet.io/
 .. _ratchet-agent: http://github.com/ratchetio/ratchet-agent
